@@ -7,15 +7,89 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
   <link rel="stylesheet" href="styles/bootstrap-material-design.min.css">
   <link rel="stylesheet" href="styles/main.css">
-  <title>App Name</title>
+  <title>SparkTrends</title>
 </head>
 
 <body>
   <nav class="navbar navbar-dark fixed-top">
-    <a class="navbar-brand" href="#">App Name</a>
+    <a id="nav-text" class="navbar-brand" href="#">Spark Trends</a>
+    <ul class="list-unstyled topbar-menu float-end mb-0">
+      <li style="display: inline-block;">
+        <a id="importTradesButton" class="btn rm-rem mb-0">
+          Import Trades
+        </a>
+      </li>
+      <li style="display: inline-block;" id="dropdown">
+        <a class="nav-link dropdown-toggle arrow-none nav-user px-2 text-decoration-none" href="#" role="button"
+          aria-haspopup="false" aria-expanded="false">
+          <span class="account-user-avatar">
+            <img alt="Gravatar" class="gravatar rounded-circle" width="32" style="width:32px;height:32px;"
+              src="https://secure.gravatar.com/avatar/627baac1feda2b4146ca9e2ab256de4c?d=mm&amp;s=64">
+          </span>
+          <span>
+            <span class="account-user-name">monroeds</span> 
+          </span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated profile-dropdown text-decoration-none"
+          id="profileDropdownMenu">
+          <a class="dropdown-item text-decoration-none" rel="nofollow" data-method="delete">
+            <i class="mdi mdi-logout me-1"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </li>
+    </ul>
   </nav>
   <div id="mainPage" class="container page-container">
-
+    <div class="card">
+      <table class="card-body calendar_large">
+        <thead>
+          <tr>
+            <th colspan="7" class="text-center">Apr 2024</th>
+          </tr>
+          <tr class="day_names">
+            <th class="saturday">Sat</th>
+            <th class="sunday">Sun</th>
+            <th class="monday">Mon</th>
+            <th class="tuesday">Tue</th>
+            <th class="wednesday">Wed</th>
+            <th class="thursday">Thu</th>
+            <th class="friday">Fri</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="scratch">20</td>
+            <td class="scratch">21</td>
+            <td class="win">22<br>
+              <div class="week_cal">
+                <a>$209.84<br>3
+                  trades</a>
+              </div>
+            </td>
+            <td class="scratch">23</td>
+            <td class="win">24<br>
+              <div class="week_cal">
+                <a>$246.44<br>15
+                  trades</a>
+              </div>
+            </td>
+            <td class="win">25<br>
+              <div class="week_cal">
+                <a>$56.02<br>8
+                  trades</a>
+              </div>
+            </td>
+            <td class="loss">26<br>
+              <div class="week_cal">
+                <a>-$1,152.59<br>7
+                  trades</a>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
   </div>
   <script src="scripts/jquery.min.js"></script>

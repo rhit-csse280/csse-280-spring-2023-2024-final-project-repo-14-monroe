@@ -1,12 +1,97 @@
 body {
-    background: #DDDDDD;
+    background: rgba(56, 56, 56, 0.55);
 }
 
 .navbar {
-    background-color: #800000;
+    background-color: #ffdd00d6;
     color: white;
 }
 
 .page-container {
     margin-top: 75px;
+}
+
+.calendar_large tbody td {
+    background-color: #e0e0e0;
+    vertical-align: top;
+    padding: 5px;
+    width: 11%;
+}
+
+.calendar_large {
+    width: 80%;
+    margin-left: 10%;
+    border-collapse: separate;
+    border-spacing: 5px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+thead, tbody, tfoot, tr, td, th {
+    border-color: inherit;
+    border-style: solid;
+    border-width: 0;
+}
+
+.calendar_large tbody td.win {
+    background-color: #ccffcc;
+}
+
+.calendar_large tbody td.loss {
+    background-color: #ffadad;
+}
+
+#nav-text {
+    color: black;
+    font-weight: bold;
+}
+
+.navbar-custom .topbar-menu li {
+    float: left;
+    max-height: 70px;
+}
+
+@media (min-width: 768px) {
+    .d-md-block {
+        display: block !important;
+    }
+}
+
+
+.mx-1 {
+    margin-right: 0.375rem !important;
+    margin-left: 0.375rem !important;
+}
+
+.navbar-custom .topbar-menu {
+    display: inline-block;  
+    position: relative;
+    z-index: 1;
+}
+
+.float-end {
+    float: right !important;
+}
+
+#importTradesButton {
+    background-color: rgba(56, 56, 56, 0.9);
+    color: #ffdd00d6;
+}
+
+.rm-rem {
+    margin-right: 1.5rem;
+}
+
+img, svg {
+    vertical-align: middle;
+}
+
+.mb-0 {
+    margin-bottom: 0 !important;
+}
+
+.account-user-name {
+    color: black;
 }
