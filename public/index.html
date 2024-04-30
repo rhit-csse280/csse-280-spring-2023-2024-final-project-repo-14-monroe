@@ -7,12 +7,12 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
   <link rel="stylesheet" href="styles/bootstrap-material-design.min.css">
   <link rel="stylesheet" href="styles/main.css">
-  <title>SparkTrends</title>
+  <title>Spark</title>
 </head>
 
 <body>
   <nav class="navbar navbar-dark fixed-top">
-    <a id="nav-text" class="navbar-brand" href="#">Spark Trends</a>
+    <a id="nav-text" class="navbar-brand" href="#">Spark</a>
     <ul class="list-unstyled topbar-menu float-end mb-0">
       <li style="display: inline-block;">
         <a id="importTradesButton" class="btn rm-rem mb-0">
@@ -27,7 +27,7 @@
               src="https://secure.gravatar.com/avatar/627baac1feda2b4146ca9e2ab256de4c?d=mm&amp;s=64">
           </span>
           <span>
-            <span class="account-user-name">monroeds</span> 
+            <span class="account-user-name">monroeds</span>
           </span>
         </a>
         <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated profile-dropdown text-decoration-none"
@@ -89,6 +89,8 @@
           </tr>
         </tbody>
       </table>
+      <canvas id="myChart" width="400" height="400"></canvas>
+      <button onclick="addData()">Add Data</button>
     </div>
 
   </div>
@@ -101,6 +103,48 @@
   <script src="/__/firebase/7.18.0/firebase-auth.js"></script>
   <script src="/__/firebase/7.18.0/firebase-firestore.js"></script>
   <script src="/__/firebase/init.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    console.log("getting it");
+    (async function () {
+      const data = [
+        { year: 2010, count: 10 },
+        { year: 2011, count: 20 },
+        { year: 2012, count: 15 },
+        { year: 2013, count: 25 },
+        { year: 2014, count: 22 },
+        { year: 2015, count: 30 },
+        { year: 2016, count: 28 },
+      ];
+
+      new Chart(
+        document.getElementById('myChart'),
+        {
+          type: 'bar',
+          options: {
+            animation: false,
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                enabled: false
+              }
+            }
+          },
+          data: {
+            labels: data.map(row => row.year),
+            datasets: [
+              {
+                label: 'Acquisitions by year',
+                data: data.map(row => row.count)
+              }
+            ]
+          }
+        }
+      );
+    })();
+  </script>
   <script src="scripts/main.js"></script>
 </body>
 
