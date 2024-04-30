@@ -89,9 +89,9 @@
           </tr>
         </tbody>
       </table>
-      <canvas id="myChart" width="400" height="400"></canvas>
-      <button onclick="addData()">Add Data</button>
+      <canvas id="volumeChart" width="400" height="400"></canvas>
     </div>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
   </div>
   <script src="scripts/jquery.min.js"></script>
@@ -104,47 +104,7 @@
   <script src="/__/firebase/7.18.0/firebase-firestore.js"></script>
   <script src="/__/firebase/init.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    console.log("getting it");
-    (async function () {
-      const data = [
-        { year: 2010, count: 10 },
-        { year: 2011, count: 20 },
-        { year: 2012, count: 15 },
-        { year: 2013, count: 25 },
-        { year: 2014, count: 22 },
-        { year: 2015, count: 30 },
-        { year: 2016, count: 28 },
-      ];
-
-      new Chart(
-        document.getElementById('myChart'),
-        {
-          type: 'bar',
-          options: {
-            animation: false,
-            plugins: {
-              legend: {
-                display: false
-              },
-              tooltip: {
-                enabled: false
-              }
-            }
-          },
-          data: {
-            labels: data.map(row => row.year),
-            datasets: [
-              {
-                label: 'Acquisitions by year',
-                data: data.map(row => row.count)
-              }
-            ]
-          }
-        }
-      );
-    })();
-  </script>
+  <script src="scripts/loadCharts.js"></script>
   <script src="scripts/main.js"></script>
 </body>
 
