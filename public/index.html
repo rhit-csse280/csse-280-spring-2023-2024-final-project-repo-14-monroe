@@ -12,7 +12,7 @@
 
 <body>
   <nav class="navbar navbar-dark fixed-top">
-    <a id="nav-text" class="navbar-brand" href="#">Spark</a>
+    <a id="nav-text" class="navbar-brand" href="#"><img id="icon" src="images/icon.png"> Spark</a>
     <ul class="list-unstyled topbar-menu float-end mb-0">
       <li style="display: inline-block;">
         <a id="importTradesButton" class="btn rm-rem mb-0">
@@ -89,7 +89,10 @@
           </tr>
         </tbody>
       </table>
-      <canvas id="volumeChart" width="400" height="400"></canvas>
+      <div id="homeCharts">
+        <canvas id="volumeChart" width="400" height="400"></canvas>
+        <canvas id="profitLossChart" width="400" height="400"></canvas>
+      </div>
     </div>
     <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 

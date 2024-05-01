@@ -36,16 +36,17 @@ thead, tbody, tfoot, tr, td, th {
 }
 
 .calendar_large tbody td.win {
-    background-color: #ccffcc;
+    background-color: #c1f9c1;
 }
 
 .calendar_large tbody td.loss {
-    background-color: #ffadad;
+    background-color: #fba1a1;
 }
 
 #nav-text {
     color: black;
     font-weight: bold;
+    width: 10rem;
 }
 
 .navbar-custom .topbar-menu li {
@@ -94,4 +95,27 @@ img, svg {
 
 .account-user-name {
     color: black;
+}
+
+#icon {
+    max-width: 48px;
+    max-height: 48px;
+}
+
+#homeCharts {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+#volumeChart {
+    width: 45% !important;
+    height: 45% !important;
+    margin-left: 1rem;
+}
+
+#profitLossChart {
+    width: 45% !important;
+    height: 45% !important;
+    margin-right: 1rem;
 }
