@@ -102,7 +102,7 @@ img, svg {
     max-height: 48px;
 }
 
-#homeCharts {
+.homeRow {
     display: flex;
     justify-content: space-between;
     width: 100%;
@@ -118,4 +118,29 @@ img, svg {
     width: 45% !important;
     height: 45% !important;
     margin-right: 1rem;
+}
+
+#winRateChart {
+    width: 45% !important;
+    height: 45% !important;
+    margin-right: 1rem;
+}
+
+#signUpButton, #logInButton {
+    background-color: #ffdd00d6;
+    color: black;
+}
+
+#logButtons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+#loginCard {
+    margin-top: 5rem;
+}
+
+#loginBody {
+    background-color: rgb(224, 202, 57);
 }

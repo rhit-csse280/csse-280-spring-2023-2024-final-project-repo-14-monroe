@@ -13,27 +13,27 @@
 <body>
   <nav class="navbar navbar-dark fixed-top">
     <a id="nav-text" class="navbar-brand" href="#"><img id="icon" src="images/icon.png"> Spark</a>
-    <ul class="list-unstyled topbar-menu float-end mb-0">
+    <ul class="topbar-menu float-end mb-0">
       <li style="display: inline-block;">
         <a id="importTradesButton" class="btn rm-rem mb-0">
           Import Trades
         </a>
       </li>
       <li style="display: inline-block;" id="dropdown">
-        <a class="nav-link dropdown-toggle arrow-none nav-user px-2 text-decoration-none" href="#" role="button"
+        <a class="nav-link dropdown-toggle" href="#" role="button"
           aria-haspopup="false" aria-expanded="false">
-          <span class="account-user-avatar">
-            <img alt="Gravatar" class="gravatar rounded-circle" width="32" style="width:32px;height:32px;"
-              src="https://secure.gravatar.com/avatar/627baac1feda2b4146ca9e2ab256de4c?d=mm&amp;s=64">
+          <span>
+            <img class="rounded-circle" style="width:32px;height:32px;"
+              src="https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_960_720.png">
           </span>
           <span>
             <span class="account-user-name">monroeds</span>
           </span>
         </a>
-        <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated profile-dropdown text-decoration-none"
+        <div class="dropdown-menu text-decoration-none"
           id="profileDropdownMenu">
           <a class="dropdown-item text-decoration-none" rel="nofollow" data-method="delete">
-            <i class="mdi mdi-logout me-1"></i>
+            <i class="mdi mdi-logout"></i>
             <span>Logout</span>
           </a>
         </div>
@@ -89,9 +89,54 @@
           </tr>
         </tbody>
       </table>
-      <div id="homeCharts">
+      <div class="homeRow">
         <canvas id="volumeChart" width="400" height="400"></canvas>
         <canvas id="profitLossChart" width="400" height="400"></canvas>
+      </div>
+      <div class="homeRow">
+        <div class="card col">
+          <div class="card-body" id="stats">
+            <div class="text-center mt-2">
+              <h5>Statistics (net)</h5>
+            </div>
+            <div>
+              <table class="table table-striped table-sm">
+                <colgroup>
+                  <col style="width:30%;">
+                  <col style="width:10%;">
+                </colgroup>
+                <tbody>
+                  <tr>
+                    <td>Trade Win Rate:</td>
+                    <td id="homeWinRate">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Win/Loss (Ratio):</td>
+                    <td id="homeWinLoss">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Average Gain/Loss per trade:</td>
+                    <td id="homeAverageWinLoss">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Largest Gain:</td>
+                    <td id="homeLargestGain">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Largest Loss:</td>
+                    <td id="homeLargestLoss">
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <canvas id="winRateChart" width="400" height="400"></canvas>
       </div>
     </div>
     <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
@@ -112,3 +157,4 @@
 </body>
 
 </html>
+
