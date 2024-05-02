@@ -131,6 +131,11 @@ img, svg {
     color: black;
 }
 
+.app-yellow {
+    background-color: #ffdd00d6;
+    color: #ffdd00d6;
+}
+
 #logButtons {
     display: flex;
     justify-content: space-between;
