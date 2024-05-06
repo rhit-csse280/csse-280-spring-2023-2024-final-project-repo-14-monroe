@@ -10,7 +10,7 @@
   <title>Spark</title>
 </head>
 
-<body>
+<body id="homePage">
   <nav class="navbar navbar-dark fixed-top">
     <a id="nav-text" class="navbar-brand" href="#"><img id="icon" src="images/icon.png"> Spark</a>
     <ul class="topbar-menu float-end mb-0">
@@ -20,22 +20,11 @@
         </a>
       </li>
       <li style="display: inline-block;" id="dropdown">
-        <a class="nav-link dropdown-toggle" href="#" role="button"
-          aria-haspopup="false" aria-expanded="false">
-          <span>
-            <img class="rounded-circle" style="width:32px;height:32px;"
-              src="https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_960_720.png">
-          </span>
-          <span>
-            <span class="account-user-name">monroeds</span>
-          </span>
-        </a>
-        <div class="dropdown-menu text-decoration-none"
-          id="profileDropdownMenu">
-          <a class="dropdown-item text-decoration-none" rel="nofollow" data-method="delete">
-            <i class="mdi mdi-logout"></i>
-            <span>Logout</span>
-          </a>
+        <div class="dropdown">
+          <a id="signOutHeader" class="btn rm-rem mb-0">Sign out</a>
+          <!-- <div class="dropdown-content">
+            <a href="#" id="signOutButton" onclick="signOut()">Sign Out</a>
+          </div> -->
         </div>
       </li>
     </ul>
@@ -157,4 +146,3 @@
 </body>
 
 </html>
-
