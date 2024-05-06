@@ -76,7 +76,7 @@ thead, tbody, tfoot, tr, td, th {
     float: right !important;
 }
 
-#importTradesButton, #signOutHeader {
+#importTradesButton, #menuSignOut {
     background-color: rgba(56, 56, 56, 0.9);
     color: #ffdd00d6;
 }

@@ -9,6 +9,19 @@
 /** namespace. */
 var rhit = rhit || {};
 
+
+// // main.js
+// let data = {
+//     name: 'John Doe',
+//     age: 30,
+//     profession: 'Software Developer'
+// };
+// module.exports = data;
+
+// // loadCharts.js
+// let data = require('./data.js');
+// console.log(data);
+
 /** globals */
 rhit.FB_COLLECTION_TRADES = "trade";
 rhit.FB_KEY_DATE = "date";
@@ -23,6 +36,7 @@ rhit.fbTradesManager = null;
 rhit.fbTradeManager = null;
 rhit.fbAuthManager = null;
 
+
 // from https://stackoverflow.com/questions/494143/creating-a-new-dom-element-from-an-html-string-using-built-in-dom-methods-or-pro/35385518#35385518
 function htmlToElement(html) {
 	var template = document.createElement('template');
@@ -33,9 +47,15 @@ function htmlToElement(html) {
 
 rhit.HomePageController = class {
 	constructor() {
+		const date = new Date();
+		document.getElementById("dateDisplay").innerHTML = date.toDateString();
 
 		document.querySelector("#importTradesButton").addEventListener("click", (event) => {
 			window.location.href = "/trade.html";
+		});
+
+		document.querySelector("#menuSignOut").addEventListener("click", (event) => {
+			rhit.FbAuthManager.signOut();
 		});
 
 		// document.querySelector("#menuShowMyQuotes").addEventListener("click", (event) => {
@@ -67,48 +87,291 @@ rhit.HomePageController = class {
 
 	}
 	// TODO
-	_createCard(movieQuote) {
-		return htmlToElement(`<div class="card">
-        <div class="card-body">
-          <h5 class="card-title">${movieQuote.quote}</h5>
-          <h6 class="card-subtitle mb-2 text-muted">${movieQuote.movie}</h6>
-        </div>
-      </div>`);
-	}
+	// _createCard(trade) {
+	//     var weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+	//     const daystring = new Date(night.day);
+	//     const adjustedDayString = new Date(daystring.getTime() + Math.abs(daystring.getTimezoneOffset() * 60000));
+	//     return htmlToElement(`<div class="card">
+	//     <div class="card-body">
+	//         <div id="cardAlign">
+	//             <h5 class="card-title handwrittenB">${weekday[adjustedDayString.getDay()]}, ${daystring.getMonth() + 1}/${adjustedDayString.getDate()}: ${Math.floor(night.duration / 60)} Hrs, ${night.duration % 60} Mins </h5>
+	//             <button id="editButton" class="btn" data-toggle="modal" data-target="#editNightDialog"><i
+	//                     class="fa-solid fa-pen-to-square" style="font-size: 25px;"></i></button>
+	//         </div>
+	//     </div>
+	// </div>`);
+	// }
 
 	updateList() {
-		console.log("Update the list on page!");
-		console.log(`Num quotes = ${rhit.fbTradesManager.length}`);
-		console.log("Example quote = ", rhit.fbTradesManager.getTradeAtIndex(0));
+		const data = firebase.firestore().collection(rhit.FB_COLLECTION_TRADES);
+		let dataArr = [];
+		let winCount = 0;
+		let lossCount = 0;
+		let scratchCount = 0;
+		let totalProfit = 0;
+		let totalLoss = 0;
+		let largestGain = 0;
+		let largestLoss = 0;
+		let winRate = 0;
+		let winLossRatio = 0;
+		let averageGainPerTrade = 0;
+		let averageLossPerTrade = 0;
+		data.get().then((querySnapshot) => {
+			querySnapshot.forEach((doc) => {
+				let docData = doc.data();
+				docData.id = doc.id;
+				dataArr.push(docData);
+				console.log(`${doc.id} => ${doc.data()}`);
+				console.log(doc.data().price);
+				console.log(docData.price, docData.quantity);
+				let profitLoss = (docData.price - 0) * docData.quantity;
+				console.log(profitLoss);
+				if (profitLoss > 0) {
+					winCount++;
+					totalProfit += profitLoss;
+					largestGain = Math.max(largestGain, profitLoss);
+				} else if (profitLoss < 0) {
+					lossCount++;
+					totalLoss += profitLoss;
+					largestLoss = Math.min(largestLoss, profitLoss);
+				}
+				else {
+					scratchCount++;
+				}
+				console.log(winCount, lossCount, scratchCount);
 
-		//make new quoteListContainer
-		const newList = htmlToElement('<div id="quoteListContainer"></div>');
-		// fill the quoteListContainer with quote cards using a loop
-		for (let i = 0; i < rhit.fbTradesManager.length; i++) {
-			const mq = rhit.fbTradesManager.getTradeAtIndex(i);
-			const newCard = this._createCard(mq);
+			})
+			console.log(dataArr);
+			console.log(winCount, lossCount, scratchCount);
+			winRate = (winCount / (winCount + lossCount + scratchCount)) * 100;
+			winLossRatio = winCount / lossCount;
+			averageGainPerTrade = totalProfit / winCount;
+			averageLossPerTrade = totalLoss / lossCount;
+			// populate the table
+			document.getElementById('homeWinRate').innerText = winRate.toFixed(2) + '%';
+			document.getElementById('homeWinLoss').innerText = winLossRatio.toFixed(2);
+			if ((averageGainPerTrade / averageLossPerTrade) >= 0) {
+				document.getElementById('homeAverageWinLoss').innerText = '$' + (averageGainPerTrade / averageLossPerTrade).toFixed(2);
+			}
+			else {
+				document.getElementById('homeAverageWinLoss').innerHTML = '-$' + Math.abs((averageGainPerTrade / averageLossPerTrade)).toFixed(2);
+			}
+			document.getElementById('homeLargestGain').innerText = '$' + largestGain.toFixed(2);
+			document.getElementById('homeLargestLoss').innerText = '-$' + Math.abs(largestLoss).toFixed(2);
+		});
 
-			newCard.onclick = (event) => {
-				//console.log(`You clicked on ${mq.id}`);
-				// rhit.storage.setMovieQuoteId(mq.id);
 
 
+		const volumeChart = new Chart(
+			document.getElementById('volumeChart'),
+			{
+				type: 'bar',
+				options: {
+					animation: false,
+					plugins: {
+						legend: {
+							display: false
+						},
+						tooltip: {
+							enabled: true,
+							position: 'nearest'
+						}
+					},
+					scales: {
+						x: {
+							title: {
+								display: true,
+								text: 'Date'
+							}
+						},
+						y: {
+							title: {
+								display: true,
+								text: 'Volume'
+							}
+						}
+					}
+				},
+				data: {
+					labels: dataArr.map(row => row.date),
+					datasets: [
+						{
+							label: 'Volume by day',
+							data: dataArr.map(row => row.quantity)
+						}
+					]
+				}
+			}
+		);
+		// })();
 
-				window.location.href = `/moviequote.html?id=${mq.id}`;
+		// (async function () {
+		let profitLossData = dataArr;
 
-			};
+		// calculate the cumulative P&L
+		let cumulativeProfitLoss = 0;
+		profitLossData = profitLossData.map(row => {
+			cumulativeProfitLoss += (row.price - 0) * row.quantity;
+			return { date: row.date, profitLoss: cumulativeProfitLoss };
+		});
 
-			newList.appendChild(newCard);
-		}
+		// min/max P&L
+		const minProfitLoss = Math.min(...profitLossData.map(row => row.profitLoss));
+		const maxProfitLoss = Math.max(...profitLossData.map(row => row.profitLoss));
 
-		// remove the old quoteListContainer
-		// const oldList = document.querySelector("#quoteListContainer");
-		// oldList.removeAttribute("id");
-		// oldList.hidden = true;
-		// put in the new quoteListContainer
-		// oldList.parentElement.appendChild(newList);
+		// create buffer
+		const buffer = 0.25;
+		const min = Math.min(minProfitLoss - buffer * Math.abs(minProfitLoss), 0);
+		const max = maxProfitLoss + buffer * Math.abs(maxProfitLoss);
+
+		const profitLossChart = new Chart(
+			document.getElementById('profitLossChart'),
+			{
+				type: 'line',
+				options: {
+					animation: false,
+					plugins: {
+						legend: {
+							display: false
+						},
+						tooltip: {
+							enabled: true,
+							position: 'nearest'
+						}
+					},
+					scales: {
+						x: {
+							title: {
+								display: true,
+								text: 'Date'
+							}
+						},
+						y: {
+							title: {
+								display: true,
+								text: 'Cumulative Profit/Loss'
+							},
+							min: min,
+							max: max
+						}
+					}
+				},
+				data: {
+					labels: profitLossData.map(row => row.date),
+					datasets: [
+						{
+							label: 'Cumulative Profit/Loss by day',
+							data: profitLossData.map(row => row.profitLoss),
+							fill: false,
+							borderColor: 'rgb(75, 192, 192)',
+							tension: 0.5  // set smoothness
+						}
+					]
+				}
+			}
+		);
+		//   })();
+
+
+		// calculate the win rate
+		let winRateData = dataArr;
+		let runningWinRate = 0;
+		let runningWinCount = 0;
+		let runningTradeCount = 0;
+		winRateData = winRateData.map(row => {
+			if ((row.price - 0) * row.quantity >= 0) {
+				runningWinCount++;
+				runningTradeCount++;
+			}
+			else {
+				runningTradeCount++;
+			}
+
+			return { date: row.date, winRate: (runningWinCount / runningTradeCount) * 100 };
+		});
+
+		const winRateChart = new Chart(
+			document.getElementById('winRateChart'),
+			{
+				type: 'line',
+				options: {
+					animation: false,
+					plugins: {
+						legend: {
+							display: false
+						},
+						tooltip: {
+							enabled: true,
+							position: 'nearest'
+						}
+					},
+					scales: {
+						x: {
+							title: {
+								display: true,
+								text: 'Date'
+							}
+						},
+						y: {
+							title: {
+								display: true,
+								text: 'Win Rate (%)'
+							},
+							min: 0,
+							suggestedMax: 100
+						}
+					}
+				},
+				data: {
+					labels: winRateData.map(row => row.date),
+					datasets: [
+						{
+							label: 'Win Rate by day',
+							data: winRateData.map(row => row.winRate),
+							fill: false,
+							borderColor: 'rgb(75, 192, 192)',
+							tension: 0.5  // set smoothness
+						}
+					]
+				}
+			}
+		);
 
 	}
+
+	// updateList() {
+	// 	console.log("Update the list on page!");
+	// 	console.log(`Num quotes = ${rhit.fbTradesManager.length}`);
+	// 	console.log("Example quote = ", rhit.fbTradesManager.getTradeAtIndex(0));
+
+	// 	//make new quoteListContainer
+	// 	const newList = htmlToElement('<div id="quoteListContainer"></div>');
+	// 	// fill the quoteListContainer with quote cards using a loop
+	// 	for (let i = 0; i < rhit.fbTradesManager.length; i++) {
+	// 		const mq = rhit.fbTradesManager.getTradeAtIndex(i);
+	// 		const newCard = this._createCard(mq);
+
+	// 		newCard.onclick = (event) => {
+	// 			//console.log(`You clicked on ${mq.id}`);
+	// 			// rhit.storage.setMovieQuoteId(mq.id);
+
+
+
+	// 			window.location.href = `/moviequote.html?id=${mq.id}`;
+
+	// 		};
+
+	// 		newList.appendChild(newCard);
+	// 	}
+
+	// 	// remove the old quoteListContainer
+	// 	// const oldList = document.querySelector("#quoteListContainer");
+	// 	// oldList.removeAttribute("id");
+	// 	// oldList.hidden = true;
+	// 	// put in the new quoteListContainer
+	// 	// oldList.parentElement.appendChild(newList);
+
+	// }
 }
 
 
@@ -335,15 +598,15 @@ rhit.FbAuthManager = class {
 			}
 			console.log("Rosefire success!", rfUser);
 
-			
+
 			firebase.auth().signInWithCustomToken(rfUser.token).catch((error) => {
-			  const errorCode = error.code;
-			  const errorMessage = error.message;
-			  if (errorCode === 'auth/invalid-custom-token') {
-				alert('The token you provided is not valid.');
-			  } else {
-			  	console.error("Custom auth login error", errorCode, errorMessage);
-			  }
+				const errorCode = error.code;
+				const errorMessage = error.message;
+				if (errorCode === 'auth/invalid-custom-token') {
+					alert('The token you provided is not valid.');
+				} else {
+					console.error("Custom auth login error", errorCode, errorMessage);
+				}
 			});
 
 		});
@@ -360,7 +623,7 @@ rhit.FbAuthManager = class {
 	get uid() {
 		return this._user.uid;
 	}
-	
+
 }
 
 
