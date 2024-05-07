@@ -168,3 +168,13 @@ img, svg {
   .dropdown:hover .dropdown-content {
     display: block;
   }
+
+  #roseFireButton {
+    display: block;
+    margin: auto auto;
+    color: black;
+    background: rgb(224, 202, 57);
+    font-size: 1.1em;
+    padding: 10px 30px;
+    border-radius: 5px;
+}

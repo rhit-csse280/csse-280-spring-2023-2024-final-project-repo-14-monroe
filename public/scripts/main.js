@@ -55,7 +55,7 @@ rhit.HomePageController = class {
 		});
 
 		document.querySelector("#menuSignOut").addEventListener("click", (event) => {
-			rhit.FbAuthManager.signOut();
+			rhit.fbAuthManager.signOut();
 		});
 
 		// document.querySelector("#menuShowMyQuotes").addEventListener("click", (event) => {
@@ -86,24 +86,8 @@ rhit.HomePageController = class {
 		rhit.fbTradesManager.beginListening(this.updateList.bind(this));
 
 	}
-	// TODO
-	// _createCard(trade) {
-	//     var weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-	//     const daystring = new Date(night.day);
-	//     const adjustedDayString = new Date(daystring.getTime() + Math.abs(daystring.getTimezoneOffset() * 60000));
-	//     return htmlToElement(`<div class="card">
-	//     <div class="card-body">
-	//         <div id="cardAlign">
-	//             <h5 class="card-title handwrittenB">${weekday[adjustedDayString.getDay()]}, ${daystring.getMonth() + 1}/${adjustedDayString.getDate()}: ${Math.floor(night.duration / 60)} Hrs, ${night.duration % 60} Mins </h5>
-	//             <button id="editButton" class="btn" data-toggle="modal" data-target="#editNightDialog"><i
-	//                     class="fa-solid fa-pen-to-square" style="font-size: 25px;"></i></button>
-	//         </div>
-	//     </div>
-	// </div>`);
-	// }
 
 	updateList() {
-		const data = firebase.firestore().collection(rhit.FB_COLLECTION_TRADES);
 		let dataArr = [];
 		let winCount = 0;
 		let lossCount = 0;
@@ -116,16 +100,12 @@ rhit.HomePageController = class {
 		let winLossRatio = 0;
 		let averageGainPerTrade = 0;
 		let averageLossPerTrade = 0;
-		data.get().then((querySnapshot) => {
+		rhit.fbTradesManager._ref.get().then((querySnapshot) => {
 			querySnapshot.forEach((doc) => {
 				let docData = doc.data();
 				docData.id = doc.id;
 				dataArr.push(docData);
-				console.log(`${doc.id} => ${doc.data()}`);
-				console.log(doc.data().price);
-				console.log(docData.price, docData.quantity);
 				let profitLoss = (docData.price - 0) * docData.quantity;
-				console.log(profitLoss);
 				if (profitLoss > 0) {
 					winCount++;
 					totalProfit += profitLoss;
@@ -138,11 +118,7 @@ rhit.HomePageController = class {
 				else {
 					scratchCount++;
 				}
-				console.log(winCount, lossCount, scratchCount);
-
 			})
-			console.log(dataArr);
-			console.log(winCount, lossCount, scratchCount);
 			winRate = (winCount / (winCount + lossCount + scratchCount)) * 100;
 			winLossRatio = winCount / lossCount;
 			averageGainPerTrade = totalProfit / winCount;
@@ -158,53 +134,50 @@ rhit.HomePageController = class {
 			}
 			document.getElementById('homeLargestGain').innerText = '$' + largestGain.toFixed(2);
 			document.getElementById('homeLargestLoss').innerText = '-$' + Math.abs(largestLoss).toFixed(2);
-		});
 
-
-
-		const volumeChart = new Chart(
-			document.getElementById('volumeChart'),
-			{
-				type: 'bar',
-				options: {
-					animation: false,
-					plugins: {
-						legend: {
-							display: false
+			
+		}).then(() => {
+			const volumeChart = new Chart(
+				document.getElementById('volumeChart'),
+				{
+					type: 'bar',
+					options: {
+						animation: false,
+						plugins: {
+							legend: {
+								display: false
+							},
+							tooltip: {
+								enabled: true,
+								position: 'nearest'
+							}
 						},
-						tooltip: {
-							enabled: true,
-							position: 'nearest'
+						scales: {
+							x: {
+								title: {
+									display: true,
+									text: 'Date'
+								}
+							},
+							y: {
+								title: {
+									display: true,
+									text: 'Volume'
+								}
+							}
 						}
 					},
-					scales: {
-						x: {
-							title: {
-								display: true,
-								text: 'Date'
+					data: {
+						labels: dataArr.map(row => row.date),
+						datasets: [
+							{
+								label: 'Volume by day',
+								data: dataArr.map(row => row.quantity)
 							}
-						},
-						y: {
-							title: {
-								display: true,
-								text: 'Volume'
-							}
-						}
+						]
 					}
-				},
-				data: {
-					labels: dataArr.map(row => row.date),
-					datasets: [
-						{
-							label: 'Volume by day',
-							data: dataArr.map(row => row.quantity)
-						}
-					]
 				}
-			}
-		);
-		// })();
-
+			);
 		// (async function () {
 		let profitLossData = dataArr;
 
@@ -270,9 +243,6 @@ rhit.HomePageController = class {
 				}
 			}
 		);
-		//   })();
-
-
 		// calculate the win rate
 		let winRateData = dataArr;
 		let runningWinRate = 0;
@@ -336,42 +306,8 @@ rhit.HomePageController = class {
 				}
 			}
 		);
-
+		});
 	}
-
-	// updateList() {
-	// 	console.log("Update the list on page!");
-	// 	console.log(`Num quotes = ${rhit.fbTradesManager.length}`);
-	// 	console.log("Example quote = ", rhit.fbTradesManager.getTradeAtIndex(0));
-
-	// 	//make new quoteListContainer
-	// 	const newList = htmlToElement('<div id="quoteListContainer"></div>');
-	// 	// fill the quoteListContainer with quote cards using a loop
-	// 	for (let i = 0; i < rhit.fbTradesManager.length; i++) {
-	// 		const mq = rhit.fbTradesManager.getTradeAtIndex(i);
-	// 		const newCard = this._createCard(mq);
-
-	// 		newCard.onclick = (event) => {
-	// 			//console.log(`You clicked on ${mq.id}`);
-	// 			// rhit.storage.setMovieQuoteId(mq.id);
-
-
-
-	// 			window.location.href = `/moviequote.html?id=${mq.id}`;
-
-	// 		};
-
-	// 		newList.appendChild(newCard);
-	// 	}
-
-	// 	// remove the old quoteListContainer
-	// 	// const oldList = document.querySelector("#quoteListContainer");
-	// 	// oldList.removeAttribute("id");
-	// 	// oldList.hidden = true;
-	// 	// put in the new quoteListContainer
-	// 	// oldList.parentElement.appendChild(newList);
-
-	// }
 }
 
 
@@ -444,28 +380,258 @@ rhit.FbTradesManager = class {
 	getTradeAtIndex(index) {
 		//date, price, quantity, status, ticker, type, user
 		const docSnapshot = this._documentSnapshots[index];
+		console.log(this._documentSnapshots[index].data().date);
 		const trade = new rhit.Trade(
-			docSnapshot.date,
-			docSnapshot.price,
-			docSnapshot.quantity,
-			docSnapshot.status,
-			docSnapshot.ticker,
-			docSnapshot.type,
-			docSnapshot.id,
+			docSnapshot.data().date,
+			docSnapshot.data().price,
+			docSnapshot.data().quantity,
+			docSnapshot.data().status,
+			docSnapshot.data().ticker,
+			docSnapshot.data().type,
+			docSnapshot.data().user,
 		);
 		return trade;
 	}
 }
 
-rhit.DetailPageController = class {
+rhit.TradePageController = class {
 	constructor() {
+// document.querySelector("#menuShowMyQuotes").addEventListener("click", (event) => {
+		// 	window.location.href = `/list.html?uid=${rhit.fbAuthManager.uid}`;
+		// });
 
-		document.querySelector("#menuSignOut").addEventListener("click", (event) => {
-			rhit.fbAuthManager.signOut();
-		});
+		// document.querySelector("#menuSignOut").addEventListener("click", (event) => {
+		// 	rhit.fbAuthManager.signOut();
+		// });
+
+		// document.querySelector("#submitAddQuote").addEventListener("click", (event) => {
+		// 	const quote = document.querySelector("#inputQuote").value;
+		// 	const movie = document.querySelector("#inputMovie").value;
+		// 	rhit.fbMovieQuotesManager.add(quote, movie);
+		// });
+
+		// $("#addQuoteDialog").on("show.bs.modal", (events) => {
+		// 	document.querySelector("#inputQuote").value = "";
+		// 	document.querySelector("#inputMovie").value = "";
+		// });
+
+		// $("#addQuoteDialog").on("shown.bs.modal", (events) => {
+		// 	document.querySelector("#inputQuote").focus();
+
+		// });
+
+		// document.querySelector("#submitEditQuote").addEventListener("click", (event) => {
+		// 	const quote = document.querySelector("#inputQuote").value;
+		// 	const movie = document.querySelector("#inputMovie").value;
+		// 	rhit.fbSingleQuoteManager.update(quote, movie);
+		// });
+
+		// $("#editQuoteDialog").on("show.bs.modal", (events) => {
+		// 	document.querySelector("#inputQuote").value = rhit.fbSingleQuoteManager.quote;
+		// 	document.querySelector("#inputMovie").value = rhit.fbSingleQuoteManager.movie;
+		// });
+
+		// $("#editQuoteDialog").on("shown.bs.modal", (events) => {
+		// 	document.querySelector("#inputQuote").focus();
+
+		// });
+
+		// document.querySelector("#submitDeleteQuote").addEventListener("click", (event) => {
+		// 	rhit.fbSingleQuoteManager.delete().then(() => {
+		// 		console.log("Document successfully deleted");
+		// 		window.location.href = "/list.html";
+		// 	}).catch(function (error) {
+		// 		console.log("Error deleting document: ", error);
+		// 	});
+		// });
+
+		document.getElementById('openModal').addEventListener('click', function(){
+			document.getElementById('myModal').classList.remove('hidden');
+		  });
+		
+		  document.getElementById('closeModal').addEventListener('click', function(){
+			document.getElementById('myModal').classList.add('hidden');
+		  });
+
+		rhit.fbTradesManager.beginListening(this.updateList.bind(this));
+	}
+
+	_createCard(trade) {
+
+		return htmlToElement(`<tr class="hover:bg-gray-100">
+		<td class="p-4">
+	</td>
+	<td class="p-4 text-xl">${trade.ticker}</td>
+	<td class="p-4 text-xl">${trade.date}</td>
+	<td class="p-4 text-xl">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${trade.type}</td>
+	<td class="p-4 text-xl">${trade.price} USD</td>
+	<td class="p-4 text-xl">${trade.quantity}</td>
+	<td class="p-4 text-xl">${trade.status}</td>
+	<td class="p-4 flex justify-end">
+		<button class="mr-2 p-1 text-xs font-medium text-white bg-blue-500 rounded-lg"><svg
+				xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+				class="bi bi-pencil-fill" viewBox="0 0 16 16">
+				<path
+					d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z" />
+			</svg></button>
+		<button class="p-1 text-xs font-medium text-white bg-red-500 rounded-lg"><svg
+				xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+				class="bi bi-trash3-fill" viewBox="0 0 16 16">
+				<path
+					d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
+			</svg></button>
+	</td>
+</tr>`);
+	}
+
+	
 
 
-		document.querySelector("#submitEditQuote").addEventListener("click", (event) => {
+	// updateView() {
+	// 	document.querySelector("#cardQuote").innerHTML = rhit.fbSingleQuoteManager.quote;
+	// 	document.querySelector("#cardMovie").innerHTML = rhit.fbSingleQuoteManager.movie;
+	// 	if (rhit.fbSingleQuoteManager.author == rhit.fbAuthManager.uid) {
+	// 		document.querySelector("#menuDelete").style.display = "flex";
+	// 		document.querySelector("#menuEdit").style.display = "flex";
+	// 	}
+	// }
+
+	updateList() {
+		console.log("Update the trades on page!");
+		console.log(`Num trades = ${rhit.fbTradesManager.length}`);
+		console.log("Example trade = ", rhit.fbTradesManager.getTradeAtIndex(0));
+
+		//make new quoteListContainer
+		const newList = htmlToElement('<tbody id="tradeListContainer"></tbody>');
+		// fill the quoteListContainer with quote cards using a loop
+		for (let i = 0; i < rhit.fbTradesManager.length; i++) {
+			const t = rhit.fbTradesManager.getTradeAtIndex(i);
+			const newCard = this._createCard(t);
+
+			// newCard.onclick = (event) => {
+			// 	//console.log(`You clicked on ${mq.id}`);
+			// 	// rhit.storage.setMovieQuoteId(mq.id);
+
+
+
+			// 	window.location.href = `/moviequote.html?id=${mq.id}`;
+
+			// };
+
+			newList.appendChild(newCard);
+		}
+
+		// remove the old tradeListContainer
+		const oldList = document.querySelector("#tradeListContainer");
+		oldList.removeAttribute("id");
+		oldList.hidden = true;
+		// put in the new tradeListContainer
+		oldList.parentElement.appendChild(newList);
+
+	}
+	
+}
+
+rhit.FbTradeManager = class {
+	constructor(tradeId) {
+		this._documentSnapshot = {};
+		this._unsubscribe = null;
+		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_TRADES).doc(tradeId);
+		console.log(`Listening to ${this._ref.path}`);
+	}
+	beginListening(changeListener) {
+		this._unsubscribe = this._ref.onSnapshot((doc) => {
+			if (doc.exists) {
+				console.log("Document data:", doc.data());
+				this._documentSnapshot = doc;
+				changeListener();
+			} else {
+				console.log("No such document!");
+			}
+		})
+	}
+	stopListening() {
+		this._unsubscribe();
+	}
+	update(date, price, quantity, status, ticker, type) {
+		this._ref.update({
+			[rhit.FB_KEY_DATE]: date,
+			[rhit.FB_KEY_PRICE]: price,
+			[rhit.FB_KEY_QUANTITY]: quantity,
+			[rhit.FB_KEY_STATUS]: status,
+			[rhit.FB_KEY_TICKER]: ticker,
+			[rhit.FB_KEY_TYPE]: type,
+			[rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now(),
+		})
+			.then(() => {
+				console.log("Document successfully updated!");
+			})
+			.catch(function (error) {
+				console.log("Error updating document: ", error);
+			})
+	}
+	delete() {
+		return this._ref.delete();
+	}
+
+	get date() {
+		return this._documentSnapshot.get(rhit.FB_KEY_DATE);
+	}
+
+	get price() {
+		return this._documentSnapshot.get(rhit.FB_KEY_PRICE);
+	}
+
+	get quantity() {
+		return this._documentSnapshot.get(rhit.FB_KEY_QUANTITY);
+	}
+	
+	get status() {
+		return this._documentSnapshot.get(rhit.FB_KEY_STATUS);
+	}
+
+	get ticker() {
+		return this._documentSnapshot.get(rhit.FB_KEY_TICKER);
+	}
+
+	get type() {
+		return this._documentSnapshot.get(rhit.FB_KEY_TYPE);
+	}
+
+	get user() {
+		return this._documentSnapshot.get(rhit.FB_KEY_USER);
+	}
+
+
+}
+
+rhit.ChangePageController = class {
+	constructor() {
+// document.querySelector("#menuShowMyQuotes").addEventListener("click", (event) => {
+		// 	window.location.href = `/list.html?uid=${rhit.fbAuthManager.uid}`;
+		// });
+
+		// document.querySelector("#menuSignOut").addEventListener("click", (event) => {
+		// 	rhit.fbAuthManager.signOut();
+		// });
+
+		// document.querySelector("#submitAddQuote").addEventListener("click", (event) => {
+		// 	const quote = document.querySelector("#inputQuote").value;
+		// 	const movie = document.querySelector("#inputMovie").value;
+		// 	rhit.fbMovieQuotesManager.add(quote, movie);
+		// });
+
+		// $("#addQuoteDialog").on("show.bs.modal", (events) => {
+		// 	document.querySelector("#inputQuote").value = "";
+		// 	document.querySelector("#inputMovie").value = "";
+		// });
+
+		// $("#addQuoteDialog").on("shown.bs.modal", (events) => {
+		// 	document.querySelector("#inputQuote").focus();
+
+		// });
+
+		document.querySelector("#submitEditTrade").addEventListener("click", (event) => {
 			const quote = document.querySelector("#inputQuote").value;
 			const movie = document.querySelector("#inputMovie").value;
 			rhit.fbSingleQuoteManager.update(quote, movie);
@@ -492,6 +658,23 @@ rhit.DetailPageController = class {
 
 		rhit.fbSingleQuoteManager.beginListening(this.updateView.bind(this));
 	}
+
+	// TODO
+	// _createCard(trade) {
+	//     var weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+	//     const daystring = new Date(night.day);
+	//     const adjustedDayString = new Date(daystring.getTime() + Math.abs(daystring.getTimezoneOffset() * 60000));
+	//     return htmlToElement(`<div class="card">
+	//     <div class="card-body">
+	//         <div id="cardAlign">
+	//             <h5 class="card-title handwrittenB">${weekday[adjustedDayString.getDay()]}, ${daystring.getMonth() + 1}/${adjustedDayString.getDate()}: ${Math.floor(night.duration / 60)} Hrs, ${night.duration % 60} Mins </h5>
+	//             <button id="editButton" class="btn" data-toggle="modal" data-target="#editNightDialog"><i
+	//                     class="fa-solid fa-pen-to-square" style="font-size: 25px;"></i></button>
+	//         </div>
+	//     </div>
+	// </div>`);
+	// }
+
 	updateView() {
 		document.querySelector("#cardQuote").innerHTML = rhit.fbSingleQuoteManager.quote;
 		document.querySelector("#cardMovie").innerHTML = rhit.fbSingleQuoteManager.movie;
@@ -500,59 +683,42 @@ rhit.DetailPageController = class {
 			document.querySelector("#menuEdit").style.display = "flex";
 		}
 	}
+
+	// updateList() {
+	// 	console.log("Update the list on page!");
+	// 	console.log(`Num quotes = ${rhit.fbTradesManager.length}`);
+	// 	console.log("Example quote = ", rhit.fbTradesManager.getTradeAtIndex(0));
+
+	// 	//make new quoteListContainer
+	// 	const newList = htmlToElement('<div id="quoteListContainer"></div>');
+	// 	// fill the quoteListContainer with quote cards using a loop
+	// 	for (let i = 0; i < rhit.fbTradesManager.length; i++) {
+	// 		const mq = rhit.fbTradesManager.getTradeAtIndex(i);
+	// 		const newCard = this._createCard(mq);
+
+	// 		newCard.onclick = (event) => {
+	// 			//console.log(`You clicked on ${mq.id}`);
+	// 			// rhit.storage.setMovieQuoteId(mq.id);
+
+
+
+	// 			window.location.href = `/moviequote.html?id=${mq.id}`;
+
+	// 		};
+
+	// 		newList.appendChild(newCard);
+	// 	}
+
+	// 	// remove the old quoteListContainer
+	// 	// const oldList = document.querySelector("#quoteListContainer");
+	// 	// oldList.removeAttribute("id");
+	// 	// oldList.hidden = true;
+	// 	// put in the new quoteListContainer
+	// 	// oldList.parentElement.appendChild(newList);
+
+	// }
+	
 }
-
-rhit.FbSingleQuoteManager = class {
-	constructor(movieQuoteId) {
-		this._documentSnapshot = {};
-		this._unsubscribe = null;
-		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_MOVIEQUOTES).doc(movieQuoteId);
-		console.log(`Listening to ${this._ref.path}`);
-	}
-	beginListening(changeListener) {
-		this._unsubscribe = this._ref.onSnapshot((doc) => {
-			if (doc.exists) {
-				console.log("Document data:", doc.data());
-				this._documentSnapshot = doc;
-				changeListener();
-			} else {
-				console.log("No such document!");
-			}
-		})
-	}
-	stopListening() {
-		this._unsubscribe();
-	}
-	update(quote, movie) {
-		this._ref.update({
-			[rhit.FB_KEY_QUOTE]: quote,
-			[rhit.FB_KEY_MOVIE]: movie,
-			[rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now(),
-		})
-			.then(() => {
-				console.log("Document successfully updated!");
-			})
-			.catch(function (error) {
-				console.log("Error updating document: ", error);
-			})
-	}
-	delete() {
-		return this._ref.delete();
-	}
-
-	get quote() {
-		return this._documentSnapshot.get(rhit.FB_KEY_QUOTE);
-	}
-
-	get movie() {
-		return this._documentSnapshot.get(rhit.FB_KEY_MOVIE);
-	}
-
-	get author() {
-		return this._documentSnapshot.get(rhit.FB_KEY_AUTHOR);
-	}
-}
-
 
 
 
@@ -591,7 +757,7 @@ rhit.FbAuthManager = class {
 	}
 	signIn() {
 		console.log("Sign in");
-		Rosefire.signIn("b220b6db-9361-4c18-bbd7-3500677731a7", (err, rfUser) => {
+		Rosefire.signIn("2922a2bc-412b-424d-8c70-d2b0f6745cde", (err, rfUser) => {
 			if (err) {
 				console.log("Rosefire error!", err);
 				return;
@@ -631,41 +797,33 @@ rhit.FbAuthManager = class {
 
 
 rhit.checkForRedirects = function () {
-	// if (document.querySelector("#loginPage") && rhit.fbAuthManager.isSignedIn) {
-	// 	window.location.href = "/list.html";
-	// }
-	// if (!document.querySelector("#loginPage") && !rhit.fbAuthManager.isSignedIn) {
-	// 	window.location.href = "/";
-	// }
+	if (document.querySelector("#loginBody") && rhit.fbAuthManager.isSignedIn) {
+		window.location.href = "/index.html";
+	}
+	if (!document.querySelector("#loginBody") && !rhit.fbAuthManager.isSignedIn) {
+		window.location.href = "/login.html";
+	}
 }
 
 rhit.initializePage = function () {
 	if (document.querySelector("#homePage")) {
 		console.log("On home page");
-
 		const urlParams = new URLSearchParams(window.location.search);
 		const uid = urlParams.get("uid");
 		console.log("uid = ", uid);
 		rhit.fbTradesManager = new rhit.FbTradesManager(uid);
 		new rhit.HomePageController();
-
 	}
 
-	if (document.querySelector("#detailPage")) {
-		console.log("On detail page");
+	if (document.querySelector("#tradePage")) {
+		console.log("On trade page");
 		const urlParams = new URLSearchParams(window.location.search);
-		const movieQuoteId = urlParams.get("id");
-
-		if (!movieQuoteId) {
-			window.location.href = "/";
-		}
-
-		rhit.fbSingleQuoteManager = new rhit.FbSingleQuoteManager(movieQuoteId);
-		new rhit.DetailPageController();
-
+		const uid = urlParams.get("uid");
+		rhit.fbTradesManager = new rhit.FbTradesManager(uid);
+		new rhit.TradePageController();
 	}
 
-	if (document.querySelector("#loginPage")) {
+	if (document.querySelector("#loginBody")) {
 		console.log("On login page");
 		new rhit.LoginPageController();
 	}
