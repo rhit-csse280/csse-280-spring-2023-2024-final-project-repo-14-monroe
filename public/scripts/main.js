@@ -457,12 +457,35 @@ rhit.TradePageController = class {
 		// 	});
 		// });
 
-		document.getElementById('openModal').addEventListener('click', function () {
-			document.getElementById('myModal').classList.remove('hidden');
+		document.getElementById('openAddModal').addEventListener('click', function () {
+			document.getElementById('addModal').classList.remove('hidden');
 		});
 
-		document.getElementById('closeModal').addEventListener('click', function () {
-			document.getElementById('myModal').classList.add('hidden');
+		document.getElementById('closeDiscardAddModal').addEventListener('click', function () {
+			document.getElementById('addModal').classList.add('hidden');
+			document.querySelector("#inputDate").value = "";
+			document.querySelector("#inputPrice").value = "";
+			document.querySelector("#inputQuantity").value = "";
+			document.querySelector("#inputStatus").value = "";
+			document.querySelector("#inputTicker").value = "";
+			document.querySelector("#inputType").value = "";
+		});
+
+		document.getElementById('closeSubmitAddModal').addEventListener('click', function () {
+			const date = document.querySelector("#inputDate").value;
+			const price = document.querySelector("#inputPrice").value;
+			const quantity = document.querySelector("#inputQuantity").value;
+			const status = document.querySelector("#inputStatus").value;
+			const ticker = document.querySelector("#inputTicker").value;
+			const type = document.querySelector("#inputType").value;
+			rhit.fbTradesManager.add(date, price, quantity, status, ticker, type);
+			document.getElementById('addModal').classList.add('hidden');
+			document.querySelector("#inputDate").value = "";
+			document.querySelector("#inputPrice").value = "";
+			document.querySelector("#inputQuantity").value = "";
+			document.querySelector("#inputStatus").value = "";
+			document.querySelector("#inputTicker").value = "";
+			document.querySelector("#inputType").value = "";
 		});
 
 		rhit.fbTradesManager.beginListening(this.updateList.bind(this));
