@@ -36,6 +36,9 @@ rhit.fbTradesManager = null;
 rhit.fbTradeManager = null;
 rhit.fbAuthManager = null;
 
+let volumeChart = null;
+let profitLossChart = null;
+let winRateChart = null;
 
 // from https://stackoverflow.com/questions/494143/creating-a-new-dom-element-from-an-html-string-using-built-in-dom-methods-or-pro/35385518#35385518
 function htmlToElement(html) {
@@ -135,9 +138,18 @@ rhit.HomePageController = class {
 			document.getElementById('homeLargestGain').innerText = '$' + largestGain.toFixed(2);
 			document.getElementById('homeLargestLoss').innerText = '-$' + Math.abs(largestLoss).toFixed(2);
 
-			
+
 		}).then(() => {
-			const volumeChart = new Chart(
+			if (volumeChart) {
+				volumeChart.destroy();
+			}
+			if (profitLossChart) {
+				profitLossChart.destroy();
+			}
+			if (winRateChart) {
+				winRateChart.destroy();
+			}
+			volumeChart = new Chart(
 				document.getElementById('volumeChart'),
 				{
 					type: 'bar',
@@ -178,134 +190,134 @@ rhit.HomePageController = class {
 					}
 				}
 			);
-		// (async function () {
-		let profitLossData = dataArr;
+			// (async function () {
+			let profitLossData = dataArr;
 
-		// calculate the cumulative P&L
-		let cumulativeProfitLoss = 0;
-		profitLossData = profitLossData.map(row => {
-			cumulativeProfitLoss += (row.price - 0) * row.quantity;
-			return { date: row.date, profitLoss: cumulativeProfitLoss };
-		});
+			// calculate the cumulative P&L
+			let cumulativeProfitLoss = 0;
+			profitLossData = profitLossData.map(row => {
+				cumulativeProfitLoss += (row.price - 0) * row.quantity;
+				return { date: row.date, profitLoss: cumulativeProfitLoss };
+			});
 
-		// min/max P&L
-		const minProfitLoss = Math.min(...profitLossData.map(row => row.profitLoss));
-		const maxProfitLoss = Math.max(...profitLossData.map(row => row.profitLoss));
+			// min/max P&L
+			const minProfitLoss = Math.min(...profitLossData.map(row => row.profitLoss));
+			const maxProfitLoss = Math.max(...profitLossData.map(row => row.profitLoss));
 
-		// create buffer
-		const buffer = 0.25;
-		const min = Math.min(minProfitLoss - buffer * Math.abs(minProfitLoss), 0);
-		const max = maxProfitLoss + buffer * Math.abs(maxProfitLoss);
+			// create buffer
+			const buffer = 0.25;
+			const min = Math.min(minProfitLoss - buffer * Math.abs(minProfitLoss), 0);
+			const max = maxProfitLoss + buffer * Math.abs(maxProfitLoss);
 
-		const profitLossChart = new Chart(
-			document.getElementById('profitLossChart'),
-			{
-				type: 'line',
-				options: {
-					animation: false,
-					plugins: {
-						legend: {
-							display: false
-						},
-						tooltip: {
-							enabled: true,
-							position: 'nearest'
-						}
-					},
-					scales: {
-						x: {
-							title: {
-								display: true,
-								text: 'Date'
+			profitLossChart = new Chart(
+				document.getElementById('profitLossChart'),
+				{
+					type: 'line',
+					options: {
+						animation: false,
+						plugins: {
+							legend: {
+								display: false
+							},
+							tooltip: {
+								enabled: true,
+								position: 'nearest'
 							}
 						},
-						y: {
-							title: {
-								display: true,
-								text: 'Cumulative Profit/Loss'
+						scales: {
+							x: {
+								title: {
+									display: true,
+									text: 'Date'
+								}
 							},
-							min: min,
-							max: max
-						}
-					}
-				},
-				data: {
-					labels: profitLossData.map(row => row.date),
-					datasets: [
-						{
-							label: 'Cumulative Profit/Loss by day',
-							data: profitLossData.map(row => row.profitLoss),
-							fill: false,
-							borderColor: 'rgb(75, 192, 192)',
-							tension: 0.5  // set smoothness
-						}
-					]
-				}
-			}
-		);
-		// calculate the win rate
-		let winRateData = dataArr;
-		let runningWinRate = 0;
-		let runningWinCount = 0;
-		let runningTradeCount = 0;
-		winRateData = winRateData.map(row => {
-			if ((row.price - 0) * row.quantity >= 0) {
-				runningWinCount++;
-				runningTradeCount++;
-			}
-			else {
-				runningTradeCount++;
-			}
-
-			return { date: row.date, winRate: (runningWinCount / runningTradeCount) * 100 };
-		});
-
-		const winRateChart = new Chart(
-			document.getElementById('winRateChart'),
-			{
-				type: 'line',
-				options: {
-					animation: false,
-					plugins: {
-						legend: {
-							display: false
-						},
-						tooltip: {
-							enabled: true,
-							position: 'nearest'
+							y: {
+								title: {
+									display: true,
+									text: 'Cumulative Profit/Loss'
+								},
+								min: min,
+								max: max
+							}
 						}
 					},
-					scales: {
-						x: {
-							title: {
-								display: true,
-								text: 'Date'
+					data: {
+						labels: profitLossData.map(row => row.date),
+						datasets: [
+							{
+								label: 'Cumulative Profit/Loss by day',
+								data: profitLossData.map(row => row.profitLoss),
+								fill: false,
+								borderColor: 'rgb(75, 192, 192)',
+								tension: 0.5  // set smoothness
+							}
+						]
+					}
+				}
+			);
+			// calculate the win rate
+			let winRateData = dataArr;
+			let runningWinRate = 0;
+			let runningWinCount = 0;
+			let runningTradeCount = 0;
+			winRateData = winRateData.map(row => {
+				if ((row.price - 0) * row.quantity >= 0) {
+					runningWinCount++;
+					runningTradeCount++;
+				}
+				else {
+					runningTradeCount++;
+				}
+
+				return { date: row.date, winRate: (runningWinCount / runningTradeCount) * 100 };
+			});
+
+			winRateChart = new Chart(
+				document.getElementById('winRateChart'),
+				{
+					type: 'line',
+					options: {
+						animation: false,
+						plugins: {
+							legend: {
+								display: false
+							},
+							tooltip: {
+								enabled: true,
+								position: 'nearest'
 							}
 						},
-						y: {
-							title: {
-								display: true,
-								text: 'Win Rate (%)'
+						scales: {
+							x: {
+								title: {
+									display: true,
+									text: 'Date'
+								}
 							},
-							min: 0,
-							suggestedMax: 100
+							y: {
+								title: {
+									display: true,
+									text: 'Win Rate (%)'
+								},
+								min: 0,
+								suggestedMax: 100
+							}
 						}
+					},
+					data: {
+						labels: winRateData.map(row => row.date),
+						datasets: [
+							{
+								label: 'Win Rate by day',
+								data: winRateData.map(row => row.winRate),
+								fill: false,
+								borderColor: 'rgb(75, 192, 192)',
+								tension: 0.5  // set smoothness
+							}
+						]
 					}
-				},
-				data: {
-					labels: winRateData.map(row => row.date),
-					datasets: [
-						{
-							label: 'Win Rate by day',
-							data: winRateData.map(row => row.winRate),
-							fill: false,
-							borderColor: 'rgb(75, 192, 192)',
-							tension: 0.5  // set smoothness
-						}
-					]
 				}
-			}
-		);
+			);
 		});
 	}
 }
@@ -396,7 +408,7 @@ rhit.FbTradesManager = class {
 
 rhit.TradePageController = class {
 	constructor() {
-// document.querySelector("#menuShowMyQuotes").addEventListener("click", (event) => {
+		// document.querySelector("#menuShowMyQuotes").addEventListener("click", (event) => {
 		// 	window.location.href = `/list.html?uid=${rhit.fbAuthManager.uid}`;
 		// });
 
@@ -445,13 +457,13 @@ rhit.TradePageController = class {
 		// 	});
 		// });
 
-		document.getElementById('openModal').addEventListener('click', function(){
+		document.getElementById('openModal').addEventListener('click', function () {
 			document.getElementById('myModal').classList.remove('hidden');
-		  });
-		
-		  document.getElementById('closeModal').addEventListener('click', function(){
+		});
+
+		document.getElementById('closeModal').addEventListener('click', function () {
 			document.getElementById('myModal').classList.add('hidden');
-		  });
+		});
 
 		rhit.fbTradesManager.beginListening(this.updateList.bind(this));
 	}
@@ -484,7 +496,7 @@ rhit.TradePageController = class {
 </tr>`);
 	}
 
-	
+
 
 
 	// updateView() {
@@ -529,7 +541,7 @@ rhit.TradePageController = class {
 		oldList.parentElement.appendChild(newList);
 
 	}
-	
+
 }
 
 rhit.FbTradeManager = class {
@@ -585,7 +597,7 @@ rhit.FbTradeManager = class {
 	get quantity() {
 		return this._documentSnapshot.get(rhit.FB_KEY_QUANTITY);
 	}
-	
+
 	get status() {
 		return this._documentSnapshot.get(rhit.FB_KEY_STATUS);
 	}
@@ -607,7 +619,7 @@ rhit.FbTradeManager = class {
 
 rhit.ChangePageController = class {
 	constructor() {
-// document.querySelector("#menuShowMyQuotes").addEventListener("click", (event) => {
+		// document.querySelector("#menuShowMyQuotes").addEventListener("click", (event) => {
 		// 	window.location.href = `/list.html?uid=${rhit.fbAuthManager.uid}`;
 		// });
 
@@ -717,7 +729,7 @@ rhit.ChangePageController = class {
 	// 	// oldList.parentElement.appendChild(newList);
 
 	// }
-	
+
 }
 
 
