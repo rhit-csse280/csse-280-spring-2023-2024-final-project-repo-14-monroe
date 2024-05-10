@@ -132,6 +132,20 @@
           </div>
         </div>
       </div>
+
+      <div id="deleteModal"
+        class="fixed top-0 left-0 w-full h-screen flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white rounded shadow-lg">
+          <div class="border-b p-3">
+            <h5 class="font-bold uppercase text-gray-600">Delete trade</h5>
+          </div>
+          <h2 class="mx-8 my-2 justify-center items-center">Are you sure you want to delete this trade?</h2>
+          <div class="flex h-1/2 p-3 justify-between border-t">
+            <button id="closeDiscardDeleteModal" class="px-3 py-1 app-yellow text-black rounded">Cancel</button>
+            <button id="closeSubmitDeleteModal" class="px-3 py-1 app-yellow text-black rounded">Delete</button>
+          </div>
+        </div>
+      </div>
       <!-- <div class="bg-gray-50 p-4 flex items-center justify-between">
                 <div class="flex items-center">
                     <span>Rows per page:</span>

@@ -50,9 +50,8 @@ function htmlToElement(html) {
 
 rhit.HomePageController = class {
 	constructor() {
-		const date = new Date();
-		document.getElementById("dateDisplay").innerHTML = date.toDateString();
-
+		// const date = new Date();
+		// document.getElementById("dateDisplay").innerHTML = date.toDateString();
 		document.querySelector("#importTradesButton").addEventListener("click", (event) => {
 			window.location.href = "/trade.html";
 		});
@@ -60,31 +59,6 @@ rhit.HomePageController = class {
 		document.querySelector("#menuSignOut").addEventListener("click", (event) => {
 			rhit.fbAuthManager.signOut();
 		});
-
-		// document.querySelector("#menuShowMyQuotes").addEventListener("click", (event) => {
-		// 	window.location.href = `/list.html?uid=${rhit.fbAuthManager.uid}`;
-		// });
-
-		// document.querySelector("#menuSignOut").addEventListener("click", (event) => {
-		// 	rhit.fbAuthManager.signOut();
-		// });
-
-		// document.querySelector("#submitAddQuote").addEventListener("click", (event) => {
-		// 	const quote = document.querySelector("#inputQuote").value;
-		// 	const movie = document.querySelector("#inputMovie").value;
-		// 	rhit.fbMovieQuotesManager.add(quote, movie);
-		// });
-
-		// $("#addQuoteDialog").on("show.bs.modal", (events) => {
-		// 	document.querySelector("#inputQuote").value = "";
-		// 	document.querySelector("#inputMovie").value = "";
-		// });
-
-		// $("#addQuoteDialog").on("shown.bs.modal", (events) => {
-		// 	document.querySelector("#inputQuote").focus();
-
-		// });
-
 		// Start listening
 		rhit.fbTradesManager.beginListening(this.updateList.bind(this));
 
@@ -103,7 +77,13 @@ rhit.HomePageController = class {
 		let winLossRatio = 0;
 		let averageGainPerTrade = 0;
 		let averageLossPerTrade = 0;
-		rhit.fbTradesManager._ref.get().then((querySnapshot) => {
+		let query = rhit.fbTradesManager._ref.orderBy(rhit.FB_KEY_LAST_TOUCHED, "desc").limit(5000);
+
+		if (!rhit.fbAuthManager.uid) {
+			console.error("uid not set correctly")
+
+		}
+		query = query.where(rhit.FB_KEY_USER, "==", rhit.fbAuthManager.uid).get().then((querySnapshot) => {
 			querySnapshot.forEach((doc) => {
 				let docData = doc.data();
 				docData.id = doc.id;
@@ -522,6 +502,17 @@ rhit.TradePageController = class {
 			document.querySelector("#editType").value = "";
 		});
 
+		document.getElementById('closeSubmitDeleteModal').addEventListener('click', function () {
+			rhit.fbTradeManager.delete();
+			document.getElementById('deleteModal').classList.add('hidden');
+		});
+
+
+
+		document.getElementById('closeDiscardDeleteModal').addEventListener('click', function () {
+			document.getElementById('deleteModal').classList.add('hidden');
+		});
+
 
 		rhit.fbTradesManager.beginListening(this.updateList.bind(this), document);
 
@@ -874,29 +865,29 @@ rhit.FbAuthManager = class {
 }
 
 rhit.checkForRedirects = function () {
-	if (document.querySelector("#loginBody") && rhit.fbAuthManager.isSignedIn) {
-		window.location.href = "/index.html";
-	}
-	if (!document.querySelector("#loginBody") && !rhit.fbAuthManager.isSignedIn) {
-		window.location.href = "/login.html";
-	}
+
+	// if (document.querySelector("#loginBody") && rhit.fbAuthManager.isSignedIn) {
+	// 	console.log("WHTF");
+	// 	window.location.href = `/index.html`;
+	// }
+	// else if (!document.querySelector("#loginBody") && !rhit.fbAuthManager.isSignedIn) {
+	// 	console.log("WHTFfdfdf");
+
+	// 	window.location.href = "/login.html";
+	// }
 }
 
 rhit.initializePage = function () {
 	if (document.querySelector("#homePage")) {
 		console.log("On home page");
-		const urlParams = new URLSearchParams(window.location.search);
-		const uid = urlParams.get("uid");
-		console.log("uid = ", uid);
-		rhit.fbTradesManager = new rhit.FbTradesManager(uid);
+		rhit.fbTradesManager = new rhit.FbTradesManager(rhit.fbAuthManager.uid);
 		new rhit.HomePageController();
+		
 	}
 
 	if (document.querySelector("#tradePage")) {
 		console.log("On trade page");
-		const urlParams = new URLSearchParams(window.location.search);
-		const uid = urlParams.get("uid");
-		rhit.fbTradesManager = new rhit.FbTradesManager(uid);
+		rhit.fbTradesManager = new rhit.FbTradesManager(rhit.fbAuthManager.uid);
 		new rhit.TradePageController();
 		// for (let i = 0; i < rhit.fbTradesManager.length; i++) {
 		// 	document.getElementById(`${i}edit`).addEventListener('click', function () {
