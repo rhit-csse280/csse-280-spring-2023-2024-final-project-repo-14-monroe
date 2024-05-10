@@ -324,7 +324,8 @@ rhit.HomePageController = class {
 
 
 rhit.Trade = class {
-	constructor(date, price, quantity, status, ticker, type, user) {
+	constructor(id, date, price, quantity, status, ticker, type, user) {
+		this.id = id,
 		this.date = date;
 		this.price = price;
 		this.quantity = quantity;
@@ -379,7 +380,7 @@ rhit.FbTradesManager = class {
 				// querySnapshot.forEach((doc) => {
 				// 	console.log(`${i++}edit`);
 				// 	console.log(doc.data());
- 				// })
+				// })
 
 				changeListener();
 			});
@@ -388,7 +389,7 @@ rhit.FbTradesManager = class {
 	stopListening() {
 		this._unsubscribe();
 	}
-	// update(id, quote, movie) {    }
+
 	// delete(id) { }
 	get length() {
 		return this._documentSnapshots.length;
@@ -397,6 +398,7 @@ rhit.FbTradesManager = class {
 		//date, price, quantity, status, ticker, type, user
 		const docSnapshot = this._documentSnapshots[index];
 		const trade = new rhit.Trade(
+			docSnapshot.id,
 			docSnapshot.data().date,
 			docSnapshot.data().price,
 			docSnapshot.data().quantity,
@@ -491,6 +493,23 @@ rhit.TradePageController = class {
 			document.querySelector("#inputType").value = "";
 		});
 
+		document.getElementById('closeSubmitEditModal').addEventListener('click', function () {
+			const date = document.querySelector("#editDate").value;
+			const price = document.querySelector("#editPrice").value;
+			const quantity = document.querySelector("#editQuantity").value;
+			const status = document.querySelector("#editStatus").value;
+			const ticker = document.querySelector("#editTicker").value;
+			const type = document.querySelector("#editType").value;
+			rhit.fbTradeManager.update(date, price, quantity, status, ticker, type);
+			document.getElementById('editModal').classList.add('hidden');
+			document.querySelector("#inputDate").value = "";
+			document.querySelector("#inputPrice").value = "";
+			document.querySelector("#inputQuantity").value = "";
+			document.querySelector("#inputStatus").value = "";
+			document.querySelector("#inputTicker").value = "";
+			document.querySelector("#inputType").value = "";
+		});
+
 
 
 		document.getElementById('closeDiscardEditModal').addEventListener('click', function () {
@@ -561,17 +580,6 @@ rhit.TradePageController = class {
 		for (let i = 0; i < rhit.fbTradesManager.length; i++) {
 			const t = rhit.fbTradesManager.getTradeAtIndex(i);
 			const newCard = this._createCard(t, i);
-
-			// newCard.onclick = (event) => {
-			// 	//console.log(`You clicked on ${mq.id}`);
-			// 	// rhit.storage.setMovieQuoteId(mq.id);
-
-
-
-			// 	window.location.href = `/moviequote.html?id=${mq.id}`;
-
-			// };
-
 			newList.appendChild(newCard);
 		}
 
@@ -582,6 +590,25 @@ rhit.TradePageController = class {
 		// put in the new tradeListContainer
 		oldList.parentElement.appendChild(newList);
 
+		for (let i = 0; i < rhit.fbTradesManager.length; i++) {
+			document.getElementById(`${i}edit`).onclick = (event) => {
+				document.getElementById('editModal').classList.remove('hidden');
+				const t = rhit.fbTradesManager.getTradeAtIndex(i);
+				console.log(t.date, t.price);
+				document.querySelector("#editDate").value = t.date;
+				document.querySelector("#editPrice").value = t.price;
+				document.querySelector("#editQuantity").value = t.quantity;
+				document.querySelector("#editStatus").value = t.status;
+				document.querySelector("#editTicker").value = t.ticker;
+				document.querySelector("#editType").value = t.type;
+				rhit.fbTradeManager = new rhit.FbTradeManager(t.id);
+			};
+		}
+		for (let i = 0; i < rhit.fbTradesManager.length; i++) {
+			document.getElementById(`${i}delete`).onclick = (event) => {
+				document.getElementById('deleteModal').classList.remove('hidden');
+			};
+		}
 	}
 
 }
