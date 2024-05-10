@@ -66,6 +66,7 @@ rhit.HomePageController = class {
 
 	updateList() {
 		let dataArr = [];
+		let tradeMap = new Map();
 		let winCount = 0;
 		let lossCount = 0;
 		let scratchCount = 0;
@@ -77,40 +78,73 @@ rhit.HomePageController = class {
 		let winLossRatio = 0;
 		let averageGainPerTrade = 0;
 		let averageLossPerTrade = 0;
-		let query = rhit.fbTradesManager._ref.orderBy(rhit.FB_KEY_LAST_TOUCHED, "desc").limit(5000);
+		let query = rhit.fbTradesManager._ref.orderBy(rhit.FB_KEY_LAST_TOUCHED, "desc");
 
 		if (!rhit.fbAuthManager.uid) {
-			console.error("uid not set correctly")
-
+			console.error("uid not set correctly");
 		}
 		query = query.where(rhit.FB_KEY_USER, "==", rhit.fbAuthManager.uid).get().then((querySnapshot) => {
 			querySnapshot.forEach((doc) => {
 				let docData = doc.data();
 				docData.id = doc.id;
 				dataArr.push(docData);
-				let profitLoss = (docData.price - 0) * docData.quantity;
-				if (profitLoss > 0) {
-					winCount++;
-					totalProfit += profitLoss;
-					largestGain = Math.max(largestGain, profitLoss);
-				} else if (profitLoss < 0) {
-					lossCount++;
-					totalLoss += profitLoss;
-					largestLoss = Math.min(largestLoss, profitLoss);
+			})
+			for (let i = 0; i < dataArr.length; i++) {
+				if (tradeMap.has(dataArr[i].ticker)) {
+					tradeMap.get(dataArr[i].ticker).push(dataArr[i]);
 				}
 				else {
-					scratchCount++;
+					let newArr = [];
+					newArr.push(dataArr[i]);
+					tradeMap.set(dataArr[i].ticker, newArr);
 				}
-			})
+			}
+			for (let ticker of tradeMap.keys()) {
+				console.log(ticker);
+				console.log(tradeMap.get(ticker));
+				let profitLoss = 0;
+				let flag = 0;
+				tradeMap.get(ticker).forEach((trade) => {
+					console.log(trade);
+					if (trade.status == "inactive") {
+						flag = 1;
+						if (trade.type == "buy") {
+							profitLoss -= trade.price * trade.quantity;
+						}
+						else {
+							profitLoss += trade.price * trade.quantity;
+						}
+					}
+				});
+				if (flag == 1) {
+					if (profitLoss > 0) {
+						winCount++;
+						totalProfit += profitLoss;
+						largestGain = Math.max(largestGain, profitLoss);
+					} else if (profitLoss < 0) {
+						lossCount++;
+						totalLoss += profitLoss;
+						largestLoss = Math.min(largestLoss, profitLoss);
+					}
+					else {
+						scratchCount++;
+					}
+				}
+
+			}
+
+
 			winRate = (winCount / (winCount + lossCount + scratchCount)) * 100;
+			console.log(winRate);
 			winLossRatio = winCount / lossCount;
 			averageGainPerTrade = totalProfit / winCount;
 			averageLossPerTrade = totalLoss / lossCount;
+			console.log(Math.abs(averageGainPerTrade / averageLossPerTrade));
 			// populate the table
 			document.getElementById('homeWinRate').innerText = winRate.toFixed(2) + '%';
 			document.getElementById('homeWinLoss').innerText = winLossRatio.toFixed(2);
-			if ((averageGainPerTrade / averageLossPerTrade) >= 0) {
-				document.getElementById('homeAverageWinLoss').innerText = '$' + (averageGainPerTrade / averageLossPerTrade).toFixed(2);
+			if (Math.abs(averageGainPerTrade / averageLossPerTrade) >= 1) {
+				document.getElementById('homeAverageWinLoss').innerText = '$' + Math.abs(averageGainPerTrade / averageLossPerTrade).toFixed(2);
 			}
 			else {
 				document.getElementById('homeAverageWinLoss').innerHTML = '-$' + Math.abs((averageGainPerTrade / averageLossPerTrade)).toFixed(2);
@@ -306,7 +340,7 @@ rhit.HomePageController = class {
 rhit.Trade = class {
 	constructor(id, date, price, quantity, status, ticker, type, user) {
 		this.id = id,
-		this.date = date;
+			this.date = date;
 		this.price = price;
 		this.quantity = quantity;
 		this.status = status;
@@ -503,6 +537,7 @@ rhit.TradePageController = class {
 		});
 
 		document.getElementById('closeSubmitDeleteModal').addEventListener('click', function () {
+			console.log(rhit.fbTradeManager);
 			rhit.fbTradeManager.delete();
 			document.getElementById('deleteModal').classList.add('hidden');
 		});
@@ -585,7 +620,6 @@ rhit.TradePageController = class {
 			document.getElementById(`${i}edit`).onclick = (event) => {
 				document.getElementById('editModal').classList.remove('hidden');
 				const t = rhit.fbTradesManager.getTradeAtIndex(i);
-				console.log(t.date, t.price);
 				document.querySelector("#editDate").value = t.date;
 				document.querySelector("#editPrice").value = t.price;
 				document.querySelector("#editQuantity").value = t.quantity;
@@ -598,6 +632,8 @@ rhit.TradePageController = class {
 		for (let i = 0; i < rhit.fbTradesManager.length; i++) {
 			document.getElementById(`${i}delete`).onclick = (event) => {
 				document.getElementById('deleteModal').classList.remove('hidden');
+				const t = rhit.fbTradesManager.getTradeAtIndex(i);
+				rhit.fbTradeManager = new rhit.FbTradeManager(t.id);
 			};
 		}
 	}
@@ -677,123 +713,6 @@ rhit.FbTradeManager = class {
 
 }
 
-rhit.ChangePageController = class {
-	constructor() {
-		// document.querySelector("#menuShowMyQuotes").addEventListener("click", (event) => {
-		// 	window.location.href = `/list.html?uid=${rhit.fbAuthManager.uid}`;
-		// });
-
-		// document.querySelector("#menuSignOut").addEventListener("click", (event) => {
-		// 	rhit.fbAuthManager.signOut();
-		// });
-
-		// document.querySelector("#submitAddQuote").addEventListener("click", (event) => {
-		// 	const quote = document.querySelector("#inputQuote").value;
-		// 	const movie = document.querySelector("#inputMovie").value;
-		// 	rhit.fbMovieQuotesManager.add(quote, movie);
-		// });
-
-		// $("#addQuoteDialog").on("show.bs.modal", (events) => {
-		// 	document.querySelector("#inputQuote").value = "";
-		// 	document.querySelector("#inputMovie").value = "";
-		// });
-
-		// $("#addQuoteDialog").on("shown.bs.modal", (events) => {
-		// 	document.querySelector("#inputQuote").focus();
-
-		// });
-
-		document.querySelector("#submitEditTrade").addEventListener("click", (event) => {
-			const quote = document.querySelector("#inputQuote").value;
-			const movie = document.querySelector("#inputMovie").value;
-			rhit.fbSingleQuoteManager.update(quote, movie);
-		});
-
-		$("#editQuoteDialog").on("show.bs.modal", (events) => {
-			document.querySelector("#inputQuote").value = rhit.fbSingleQuoteManager.quote;
-			document.querySelector("#inputMovie").value = rhit.fbSingleQuoteManager.movie;
-		});
-
-		$("#editQuoteDialog").on("shown.bs.modal", (events) => {
-			document.querySelector("#inputQuote").focus();
-
-		});
-
-		document.querySelector("#submitDeleteQuote").addEventListener("click", (event) => {
-			rhit.fbSingleQuoteManager.delete().then(() => {
-				console.log("Document successfully deleted");
-				window.location.href = "/list.html";
-			}).catch(function (error) {
-				console.log("Error deleting document: ", error);
-			});
-		});
-
-		rhit.fbSingleQuoteManager.beginListening(this.updateView.bind(this));
-	}
-
-	// TODO
-	// _createCard(trade) {
-	//     var weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-	//     const daystring = new Date(night.day);
-	//     const adjustedDayString = new Date(daystring.getTime() + Math.abs(daystring.getTimezoneOffset() * 60000));
-	//     return htmlToElement(`<div class="card">
-	//     <div class="card-body">
-	//         <div id="cardAlign">
-	//             <h5 class="card-title handwrittenB">${weekday[adjustedDayString.getDay()]}, ${daystring.getMonth() + 1}/${adjustedDayString.getDate()}: ${Math.floor(night.duration / 60)} Hrs, ${night.duration % 60} Mins </h5>
-	//             <button id="editButton" class="btn" data-toggle="modal" data-target="#editNightDialog"><i
-	//                     class="fa-solid fa-pen-to-square" style="font-size: 25px;"></i></button>
-	//         </div>
-	//     </div>
-	// </div>`);
-	// }
-
-	updateView() {
-		document.querySelector("#cardQuote").innerHTML = rhit.fbSingleQuoteManager.quote;
-		document.querySelector("#cardMovie").innerHTML = rhit.fbSingleQuoteManager.movie;
-		if (rhit.fbSingleQuoteManager.author == rhit.fbAuthManager.uid) {
-			document.querySelector("#menuDelete").style.display = "flex";
-			document.querySelector("#menuEdit").style.display = "flex";
-		}
-	}
-
-	// updateList() {
-	// 	console.log("Update the list on page!");
-	// 	console.log(`Num quotes = ${rhit.fbTradesManager.length}`);
-	// 	console.log("Example quote = ", rhit.fbTradesManager.getTradeAtIndex(0));
-
-	// 	//make new quoteListContainer
-	// 	const newList = htmlToElement('<div id="quoteListContainer"></div>');
-	// 	// fill the quoteListContainer with quote cards using a loop
-	// 	for (let i = 0; i < rhit.fbTradesManager.length; i++) {
-	// 		const mq = rhit.fbTradesManager.getTradeAtIndex(i);
-	// 		const newCard = this._createCard(mq);
-
-	// 		newCard.onclick = (event) => {
-	// 			//console.log(`You clicked on ${mq.id}`);
-	// 			// rhit.storage.setMovieQuoteId(mq.id);
-
-
-
-	// 			window.location.href = `/moviequote.html?id=${mq.id}`;
-
-	// 		};
-
-	// 		newList.appendChild(newCard);
-	// 	}
-
-	// 	// remove the old quoteListContainer
-	// 	// const oldList = document.querySelector("#quoteListContainer");
-	// 	// oldList.removeAttribute("id");
-	// 	// oldList.hidden = true;
-	// 	// put in the new quoteListContainer
-	// 	// oldList.parentElement.appendChild(newList);
-
-	// }
-
-}
-
-
-
 // rhit.storage = rhit.storage || {};
 // rhit.storage.MOVIEQUOTE_ID_KEY = "movieQuoteId";
 
@@ -865,16 +784,15 @@ rhit.FbAuthManager = class {
 }
 
 rhit.checkForRedirects = function () {
+	if (document.querySelector("#loginBody") && rhit.fbAuthManager.isSignedIn) {
+		console.log("WHTF");
+		window.location.href = `/index.html`;
+	}
+	else if (!document.querySelector("#loginBody") && !rhit.fbAuthManager.isSignedIn) {
+		console.log("WHTFfdfdf");
 
-	// if (document.querySelector("#loginBody") && rhit.fbAuthManager.isSignedIn) {
-	// 	console.log("WHTF");
-	// 	window.location.href = `/index.html`;
-	// }
-	// else if (!document.querySelector("#loginBody") && !rhit.fbAuthManager.isSignedIn) {
-	// 	console.log("WHTFfdfdf");
-
-	// 	window.location.href = "/login.html";
-	// }
+		window.location.href = "/login.html";
+	}
 }
 
 rhit.initializePage = function () {
@@ -882,7 +800,7 @@ rhit.initializePage = function () {
 		console.log("On home page");
 		rhit.fbTradesManager = new rhit.FbTradesManager(rhit.fbAuthManager.uid);
 		new rhit.HomePageController();
-		
+
 	}
 
 	if (document.querySelector("#tradePage")) {
