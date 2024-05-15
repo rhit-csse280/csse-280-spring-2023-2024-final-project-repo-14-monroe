@@ -303,17 +303,42 @@ rhit.HomePageController = class {
 			);
 			// calculate the win rate
 			let winRateData = dataArr;
-			let runningWinRate = 0;
+			let groupedWinRateData = winRateData.reduce((acc, row) => {
+				acc[row.date] = acc[row.date] || [];
+				acc[row.date].push(row);
+				return acc;
+			}, {});
+			winRateData = Object.entries(groupedWinRateData).map(([date, rows]) => ({ date, rows }));
+			winRateData.sort((a, b) => new Date(a.date) - new Date(b.date));
 			let runningWinCount = 0;
 			let runningTradeCount = 0;
 			winRateData = winRateData.map(row => {
-				if ((row.price - 0) * row.quantity >= 0) {
-					runningWinCount++;
-					runningTradeCount++;
+
+				for (let ticker of tradeMap.keys()) {
+					let tickerProfitLoss = 0;
+					let flag = 0;
+					tradeMap.get(ticker).forEach((trade) => {
+						if (trade.status == "inactive" && new Date(trade.date).getTime() == new Date(row.date).getTime()) {
+							flag = 1;
+							if (trade.type == "buy") {
+								tickerProfitLoss -= trade.price * trade.quantity;
+							}
+							else {
+								tickerProfitLoss += trade.price * trade.quantity;
+							}
+						}
+					});
+					if (flag) {
+						if (tickerProfitLoss >= 0) {
+							runningWinCount++;
+							runningTradeCount++;
+						}
+						else {
+							runningTradeCount++;
+						}
+					}
 				}
-				else {
-					runningTradeCount++;
-				}
+
 
 				return { date: row.date, winRate: (runningWinCount / runningTradeCount) * 100 };
 			});
