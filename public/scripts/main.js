@@ -163,6 +163,8 @@ rhit.HomePageController = class {
 			if (winRateChart) {
 				winRateChart.destroy();
 			}
+			const groupedDataArr = groupByDate(dataArr);
+			groupedDataArr.sort((a, b) => new Date(a.date) - new Date(b.date));
 			volumeChart = new Chart(
 				document.getElementById('volumeChart'),
 				{
@@ -194,25 +196,55 @@ rhit.HomePageController = class {
 						}
 					},
 					data: {
-						labels: dataArr.map(row => row.date),
+						labels: groupedDataArr.map(row => row.date),
 						datasets: [
 							{
 								label: 'Volume by day',
-								data: dataArr.map(row => row.quantity)
+								data: groupedDataArr.map(row => row.quantity)
 							}
 						]
 					}
 				}
 			);
-			// (async function () {
-			let profitLossData = dataArr;
 
-			// calculate the cumulative P&L
+
+			// Group the data by date
+			let profitLossData = dataArr;
+			let groupedData = profitLossData.reduce((acc, row) => {
+				acc[row.date] = acc[row.date] || [];
+				acc[row.date].push(row);
+				return acc;
+			}, {});
+
+			// Convert the grouped data to an array and sort it by date
+			profitLossData = Object.entries(groupedData).map(([date, rows]) => ({ date, rows }));
+			profitLossData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+			// Calculate the cumulative P&L for each group
 			let cumulativeProfitLoss = 0;
-			profitLossData = profitLossData.map(row => {
-				cumulativeProfitLoss += (row.price - 0) * row.quantity;
+			profitLossData = profitLossData.map((row) => {
+				for (let ticker of tradeMap.keys()) {
+					let profitLoss = 0;
+					tradeMap.get(ticker).forEach((trade) => {
+						if (trade.status == "inactive" && new Date(trade.date).getTime() == new Date(row.date).getTime()) {
+							if (trade.type == "buy") {
+								profitLoss -= trade.price * trade.quantity;
+							}
+							else {
+								profitLoss += trade.price * trade.quantity;
+							}
+						}
+					});
+					cumulativeProfitLoss += profitLoss;
+				}
 				return { date: row.date, profitLoss: cumulativeProfitLoss };
 			});
+			// let dates = []
+			// profitLossData = profitLossData.filter((row, index) => {
+			// 	if (dates.has[row.date]){
+			// 		index !== removeIndex
+			// 	}
+			// });
 
 			// min/max P&L
 			const minProfitLoss = Math.min(...profitLossData.map(row => row.profitLoss));
@@ -334,6 +366,15 @@ rhit.HomePageController = class {
 			);
 		});
 	}
+}
+
+function groupByDate(dataArr) {
+	const groupedData = dataArr.reduce((acc, row) => {
+		acc[row.date] = (acc[row.date] || 0) + Number(row.quantity);
+		return acc;
+	}, {});
+
+	return Object.entries(groupedData).map(([date, quantity]) => ({ date, quantity }));
 }
 
 
