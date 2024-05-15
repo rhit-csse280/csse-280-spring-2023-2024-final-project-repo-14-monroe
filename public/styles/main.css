@@ -142,15 +142,6 @@ img, svg {
     width: 100%;
 }
 
-#loginCard {
-    margin-top: 5rem;
-}
-
-#loginBody {
-    background-color: rgb(224, 202, 57);
-}
-
-
 .dropdown {
     position: relative;
     display: inline-block;
@@ -172,9 +163,26 @@ img, svg {
   #roseFireButton {
     display: block;
     margin: auto auto;
-    color: black;
-    background: rgb(224, 202, 57);
+    color: rgb(224, 202, 57);
+    background: black;
     font-size: 1.1em;
     padding: 10px 30px;
+    border-radius: 5px;
+}
+
+.login-container {
+    background-color: none;
+    width: 50vw;
+    height: 20vw;
+}
+
+.login-container h2 {
+    text-align: center;
+}
+
+.login-container button {
+    width: 100%;
+    padding: 10px;
+    border: none;
     border-radius: 5px;
 }
